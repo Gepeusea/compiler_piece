@@ -1,6 +1,3 @@
-// При запуске cargo run, программа должна выполняться
-// При запуске cargo fmt --check вывод должен быть пустым
-// При запуске cargo clippy, не должно быть предупреждений
 
 use core::panic;
 use std::iter::Peekable;
@@ -108,11 +105,12 @@ fn priority(sign: Sign) -> i32{
     }
 }
 
+// функция возращает ветвление дерева, в результате выполнения программа вернет готовое дерево
 fn operation(mut left : Ast, tokeniter : &mut Peekable<impl Iterator<Item = Token>>) -> Ast{
     if let Some(operator) = tokeniter.next(){
         if let Token::Signs(cur_sign) = operator{
             let right = operand(tokeniter);
-            if let Some(next_token) = tokeniter.peek(){
+            if let Some(next_token) = tokeniter.peek(){  // "подглядываем" на следующий символ, не доставая его
                 if let Token::Signs(next_sign) = next_token{
                     if priority(cur_sign) >= priority(*next_sign){
                         left = Ast::Branching(cur_sign, Box::new(left), Box::new(right));
@@ -140,7 +138,9 @@ fn operation(mut left : Ast, tokeniter : &mut Peekable<impl Iterator<Item = Toke
     }
 }
 
-fn operand(tokeniter: &mut Peekable<impl Iterator<Item = Token>>) -> Ast{ //без скобок
+// функция возвращает лист дерева
+// при обработке открывающей скобки начинаем обрабатывать выражение внутри
+fn operand(tokeniter: &mut Peekable<impl Iterator<Item = Token>>) -> Ast{
     if let Some(cur_block) = tokeniter.next(){
         if let Token::Number(number) = cur_block{
             Ast::Number(number)
@@ -158,11 +158,11 @@ fn operand(tokeniter: &mut Peekable<impl Iterator<Item = Token>>) -> Ast{ //бе
 
 
 fn main() {
-    let tokenized = lexer("p3r3m = 2 * (1 + 3); "); // обработка выражения после знака
-    //let tokenized = lexer("5 * (p3r3m + 1) / 3.25 + 4;");
+    // на вход подается выражение и разбивается на лексемы
+    let tokenized = lexer("p3r3m = 2 * (1 + 3); ");
     println!("{:?}", tokenized);
-    // let mut result = 0;
     let mut tokeniter = tokenized.into_iter().peekable();
+    // итеррируемся по токенам, составляя дерево абстрактного синтаксиса
     if let Some(variable_name) = tokeniter.next(){ 
         if let Some(equal_sign) = tokeniter.next(){ 
             println!("{:?}, {:?}, {:?}", variable_name, equal_sign, operation(operand(&mut tokeniter), &mut tokeniter))
@@ -172,14 +172,4 @@ fn main() {
     } else {
         panic!("the input has an invalid structure")
     }
-    // while let Some(cur_block) = tokeniter.next(){
-    //     match cur_block{
-    //         Token::Signs(block) => { Operation(block); },
-    //         // Token::Equal(block) => println!({}, c),
-    //         Token::Number(block) => { Operand(block); },
-    //         // Token::Ident(block) => println!({}, c),
-    //         Token::Bracket(block) => { Operand(block); },
-    //         // Token::Endofline(block) => println!({}, c),
-    //         }
-    //     }
     }
